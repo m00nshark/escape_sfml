@@ -23,12 +23,13 @@ class
 {
 public:
 	float accel = 0.3f;
-	float accel_side = 0.15f;
+	float accel_side = accel / 2;
 	float dx = 0.f;
 	float dy = 0.f;
 	int rotation = 0.f;
 
 	float cap_speed = 15.f;
+	floar decel_proc = 0.
 	float spd_rotation = 1.f;
 	int cap_rotation = 20;
 
@@ -64,7 +65,7 @@ void bot_processing_input()
 
 	if (getkey.q && getkey.e)
 	{
-		
+		if(bot_stats.dx > )
 	}
 
 	if (getkey.a && bot_stats.rotation > -bot_stats.cap_rotation)
