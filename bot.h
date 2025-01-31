@@ -9,6 +9,7 @@ sf::Sprite bot(bot_txtr);
 sf::Clock input_update_clock;
 sf::Time cap_input_update = sf::milliseconds(50);
 sf::Vector2u window_size;
+int firstcall = true;
 
 // stores booleans of "so-needed" events lmao
 class
@@ -35,7 +36,7 @@ public:
 		// max (speed of) rotation
 	const int cap_rotation = 20;
 		// bounce acceleration (should be multiplied on)
-	const float bounce_accel = -0.8;
+	const float bounce_accel = -0.5;
 
 			// dynamic parameters
 		// current speed for in-game X coord
@@ -78,12 +79,12 @@ void bot_processing_input()
 	if (getkey.w)
 	{
 		bot_stats.dx += bot_stats.accel * sinf(bot_stats.angle.asRadians());
-		bot_stats.dy += -bot_stats.accel * cosf(bot_stats.angle.asRadians());
+		bot_stats.dy += bot_stats.accel * cosf(bot_stats.angle.asRadians());
 	}	
 	if (getkey.s)
 	{
 		bot_stats.dx -= bot_stats.accel * sinf(bot_stats.angle.asRadians());
-		bot_stats.dy -= -bot_stats.accel * cosf(bot_stats.angle.asRadians());
+		bot_stats.dy -= bot_stats.accel * cosf(bot_stats.angle.asRadians());
 	}
 
 	// processing of rotation
@@ -110,7 +111,6 @@ void bot_processing_input()
 			bot_stats.dx -= bot_stats.accel;
 		else bot_stats.dx = 0;
 
-
 		if (bot_stats.dy < -bot_stats.accel)
 			bot_stats.dy += bot_stats.accel;
 		else if (bot_stats.dy > bot_stats.accel)
@@ -122,9 +122,6 @@ void bot_processing_input()
 void bot_proc_phys()
 {
 	sf::Vector2f pos = bot.getPosition();
-	//x = pos.x; x - float
-	//y = pos.y; y - float
-	// window_size is sf::Vector2u
 	
 	if (pos.x < 0)
 	{
@@ -162,7 +159,7 @@ void bot_proc_phys()
 void bot_processing_movement()
 {
 	bot.rotate(sf::degrees(bot_stats.rotation));
-	bot.move({ bot_stats.dx, bot_stats.dy });
+	bot.move({ bot_stats.dx, -bot_stats.dy });
 }
 																				// janky var init, for realtime in-game debug text
 																				char debugtext[48];
@@ -179,7 +176,10 @@ void bot_loop()
 	}
 
 	//calling other functions to complete the full processing
-	bot_proc_phys();
+	if (firstcall < 2)
+		firstcall += 1;
+	else
+		bot_proc_phys();
 	bot_processing_movement();
 	
 																				// janky sprintf_s, to feed some variables to debugtext[40]
