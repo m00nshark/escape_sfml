@@ -6,14 +6,6 @@ find it, repair it, and escape the void you're stuck in.
 
 //>>>>>>>>>>>>>>>>>>
 
-to build this project:
-- use Visual Studio 2022
-- download SFML 3.0.0 for x32 (this link: https://www.sfml-dev.org/files/SFML-3.0.0-windows-vc17-32-bit.zip ) and unpack it into sub-root directory
-	(so file structure would look like this:
-		working directory
-		|>escape_sfml
-		||>  {project files}
-		|
-		|>SFML-3.0.0
-		||>  {sfml files}
-	)
+used IDE: Visual Studio 2022
+used SFML version: 3.0.0
+used brain potential: null
