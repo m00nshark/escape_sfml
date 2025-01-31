@@ -8,6 +8,8 @@ this header so stupidly plain, should i even tell what does it do?
 class
 {
 public:
+	bool f1 = false;
+
 	bool a;
 
 	bool c;
@@ -28,6 +30,8 @@ public:
 
 void key_upd_full()
 {
+	getkey.f1 = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F1);
+
 	getkey.a = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A);
 
 	getkey.c = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::C);

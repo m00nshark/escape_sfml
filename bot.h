@@ -2,12 +2,13 @@
 #include "keyboard-to-bool.h"
 #include <math.h>
 
-
+// some necessary variables. i think they talk for themselves
+// so i don't need to describe every of them with honour and fashion
 sf::Texture bot_txtr("textures/quill.png");
 sf::Sprite bot(bot_txtr);
 sf::Clock input_update_clock;
 sf::Time cap_input_update = sf::milliseconds(50);
-
+sf::Vector2u window_size;
 
 // stores booleans of "so-needed" events lmao
 class
@@ -18,8 +19,6 @@ public:
 	bool a_o = false;
 	bool d_o = false;
 	bool u_turn = false;
-	
-	bool input_upd = false;
 } bot_event_processed;
 
 // stores stats that sf::sprite couldn't store
@@ -35,6 +34,8 @@ public:
 	const int spd_rotation = 1;
 		// max (speed of) rotation
 	const int cap_rotation = 20;
+		// bounce acceleration (should be multiplied on)
+	const float bounce_accel = -0.8;
 
 			// dynamic parameters
 		// current speed for in-game X coord
@@ -45,7 +46,6 @@ public:
 	sf::Angle angle = sf::degrees(0);
 		// current (speed of) rotation
 	int rotation = 0;
-		
 	
 } bot_stats;
 
@@ -121,8 +121,31 @@ void bot_processing_input()
 
 void bot_proc_phys()
 {
-	// ayy, it's empty here now.
-	// you've probably guessed it right, it's currently to be done.
+	sf::Vector2f pos = bot.getPosition();
+	//x = pos.x; x - float
+	//y = pos.y; y - float
+	// window_size is sf::Vector2u
+	
+	if (pos.x < 0)
+	{
+		bot_stats.dx *= bot_stats.bounce_accel;
+		bot.setPosition({1.f,pos.y});
+	}
+	if (pos.x > window_size.x)
+	{
+		bot_stats.dx *= bot_stats.bounce_accel;
+		bot.setPosition({ (window_size.x - 1.f) ,pos.y });
+	}
+	if (pos.y < 0)
+	{
+		bot_stats.dy *= bot_stats.bounce_accel;
+		bot.setPosition({ pos.x, 1.f });
+	}
+	if (pos.y > window_size.y)
+	{
+		bot_stats.dy *= bot_stats.bounce_accel;
+		bot.setPosition({ pos.x ,(window_size.y - 1.f) });
+	}
 }
 
 
@@ -136,7 +159,7 @@ void bot_proc_phys()
 */
 
 // processing rotation, movement (and to be implemented - collision and something else idk)
-void bot_processing_it_all()
+void bot_processing_movement()
 {
 	bot.rotate(sf::degrees(bot_stats.rotation));
 	bot.move({ bot_stats.dx, bot_stats.dy });
@@ -149,25 +172,16 @@ void bot_loop()
 	// here i implemented input throttling by timer.
 	// did it in mind of debugging when CPU couldn't handle all the maths.
 	// cuurrently it does... really... nothing useful.
-	if (bot_event_processed.input_upd) bot_event_processed.input_upd = false;
 	if (input_update_clock.getElapsedTime() > cap_input_update)
 	{
-		if (!bot_event_processed.input_upd)
-		{
-			bot_processing_input();
-			bot_event_processed.input_upd = true;
-			input_update_clock.restart();
-		}
-		else
-		{
-			bot_processing_input();
-			input_update_clock.restart();
-		}
+		bot_processing_input();
+		input_update_clock.restart();
 	}
 
 	//calling other functions to complete the full processing
 	bot_proc_phys();
-	bot_processing_it_all();
+	bot_processing_movement();
+	
 																				// janky sprintf_s, to feed some variables to debugtext[40]
 																				sprintf_s(debugtext, "e %f %f", (bot_stats.dx), bot_stats.dy);
 }

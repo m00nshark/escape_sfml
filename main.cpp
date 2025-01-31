@@ -1,5 +1,5 @@
 /*
-        a main file. all sturr related to main_window mgmt should be put here and not anywhere else.
+        a main file. all stuff related to main_window management should be put here and not anywhere else.
         (reminder for myself)
 */
 
@@ -12,6 +12,7 @@
 #include "math.h"
 
 #include "bot.h"
+#include "keyboard-to-bool.h"
 
 int main()
 {
@@ -21,19 +22,16 @@ int main()
         ShowWindow(hwnd, SW_HIDE);
     #endif
 
-
-    // create a main_window
+    // create a main_window, next line - cap it's framerate (and with it - update rate) to 60
     sf::RenderWindow main_window(sf::VideoMode({ 1280, 720 }), "escape the void, the game", sf::Style::Default, sf::State::Windowed);
     main_window.setFramerateLimit(60);
 
-    // init code. that if(true) is here for my own convenience
-    if (true)
-    {
-        bot_init();
-    }
+        // init code
+    bot_init();
 
-    // init text&font, currently for debug goals
+    //init terminus font
     sf::Font f_terminus("fonts/terminus.ttf");
+    // init text, currently for debug goals
     sf::Text debugger_text(f_terminus);
     debugger_text.setCharacterSize(36);
     debugger_text.setFillColor(sf::Color::White);
@@ -41,7 +39,18 @@ int main()
     debugger_text.setPosition({ 10.f, 674.f });
     debugger_text.setString("d");
 
-
+    // init text for movement tooltip
+    sf::Text tooltip_text(f_terminus);
+    tooltip_text.setCharacterSize(24);
+    tooltip_text.setFillColor(sf::Color::White);
+    tooltip_text.setStyle(sf::Text::Regular);
+    tooltip_text.setPosition({ 10.f, 10.f });
+    tooltip_text.setString
+    (" W/A - acceleration \n A/D - rotation \n Q+E - stop \n F1 - show this tooltip");
+    // init timer for autohiding tooltip
+    sf::Clock tooltip_hide_timer;
+    sf::Time tooltip_autohide_delay = sf::seconds(3);
+    tooltip_hide_timer.restart();
 
 
     // main WHILE loop
@@ -59,15 +68,15 @@ int main()
             main_window.close();
         }
 
+        //out-of-drawing loop code
+        key_upd_full();
+        bot_loop();
+        // handling auto-hiding of tooltip
+        if (tooltip_hide_timer.getElapsedTime() > tooltip_autohide_delay)
+             tooltip_text.setFillColor(sf::Color(255, 255, 255, 0));
+        else tooltip_text.setFillColor(sf::Color(255, 255, 255, 255));
 
-
-        //out-of-drawing loop code. that if(true) is here for my own convenience
-        if (true)
-        {
-            key_upd_full();
-            bot_loop();
-        }
-
+        if (getkey.f1) tooltip_hide_timer.restart();
 
 
         main_window.clear(sf::Color::Black);
@@ -75,12 +84,14 @@ int main()
         // drawing loop code
         if (true)
         {
+            window_size = main_window.getSize();
             main_window.draw(bot);
         }
 
         //debug text drawing
         debugger_text.setString(debugtext);
         
+        main_window.draw(tooltip_text);
         main_window.draw(debugger_text);
         main_window.display();
     }
