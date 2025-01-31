@@ -1,6 +1,10 @@
 #pragma once
 #include "SFML/Window.hpp"
 
+/*
+this header so stupidly plain, should i even tell what does it do?
+*/
+
 class
 {
 public:

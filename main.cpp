@@ -26,12 +26,13 @@ int main()
     sf::RenderWindow main_window(sf::VideoMode({ 1280, 720 }), "escape the void, the game", sf::Style::Default, sf::State::Windowed);
     main_window.setFramerateLimit(60);
 
-    // init code
+    // init code. that if(true) is here for my own convenience
     if (true)
     {
         bot_init();
     }
 
+    // init text&font, currently for debug goals
     sf::Font f_terminus("fonts/terminus.ttf");
     sf::Text debugger_text(f_terminus);
     debugger_text.setCharacterSize(36);
@@ -43,16 +44,16 @@ int main()
 
 
 
-
+    // main WHILE loop
     while (main_window.isOpen())
     {
-        // main_window event seeker
+        // main_window event seeker, so window closes on alt+f4
         while (const std::optional event = main_window.pollEvent())      // makes main_window alive, does event control
         {
             if (event->is<sf::Event::Closed>())
                 main_window.close();
         }
-        // exit on pressing ESC key
+        // exit on pressing ESC key, legacy of 0f0x64's PONG
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))  // seek for pressing an ESC button, close main_window if true
         {
             main_window.close();
@@ -60,7 +61,7 @@ int main()
 
 
 
-        //out-of-drawing loop code 
+        //out-of-drawing loop code. that if(true) is here for my own convenience
         if (true)
         {
             key_upd_full();
@@ -70,15 +71,17 @@ int main()
 
 
         main_window.clear(sf::Color::Black);
+
         // drawing loop code
         if (true)
         {
             main_window.draw(bot);
-            
         }
-        debugger_text.setString(debugtext);
-        main_window.draw(debugger_text);
 
+        //debug text drawing
+        debugger_text.setString(debugtext);
+        
+        main_window.draw(debugger_text);
         main_window.display();
     }
 }
