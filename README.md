@@ -6,6 +6,6 @@ find it, repair it, and escape the void you're stuck in.
 
 //>>>>>>>>>>>>>>>>>>
 
-used IDE: Visual Studio 2022
-used SFML version: 3.0.0
-used brain potential: null
+used IDE: Visual Studio 2022;
+used SFML version: 3.0.0;
+used brain potential: null;
