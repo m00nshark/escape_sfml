@@ -9,7 +9,6 @@ sf::Sprite bot(bot_txtr);
 sf::Clock input_update_clock;
 sf::Time cap_input_update = sf::milliseconds(50);
 sf::Vector2u window_size;
-int firstcall = true;
 
 // stores booleans of "so-needed" events lmao
 class
@@ -45,8 +44,8 @@ public:
 	float dy = 0.f;
 		// current angle, relative to in-game XY coords
 	sf::Angle angle = sf::degrees(0);
-		// current (speed of) rotation
-	int rotation = 0;
+		// current (speed of) rotation as degrees
+	float rotation = 0;
 	
 } bot_stats;
 
@@ -79,19 +78,39 @@ void bot_processing_input()
 	if (getkey.w)
 	{
 		bot_stats.dx += bot_stats.accel * sinf(bot_stats.angle.asRadians());
-		bot_stats.dy += bot_stats.accel * cosf(bot_stats.angle.asRadians());
+		bot_stats.dy -= bot_stats.accel * cosf(bot_stats.angle.asRadians());
 	}	
 	if (getkey.s)
 	{
 		bot_stats.dx -= bot_stats.accel * sinf(bot_stats.angle.asRadians());
-		bot_stats.dy -= bot_stats.accel * cosf(bot_stats.angle.asRadians());
+		bot_stats.dy += bot_stats.accel * cosf(bot_stats.angle.asRadians());
+	}
+
+	// processing side movement
+	if (getkey.e && !getkey.q)
+	{
+		bot_stats.dx += bot_stats.accel_side * sinf(bot_stats.angle.asRadians() + 1.5708f);
+		bot_stats.dy -= bot_stats.accel_side * cosf(bot_stats.angle.asRadians() + 1.5708f);
+	}
+	if (getkey.q && !getkey.e)
+	{
+		bot_stats.dx -= bot_stats.accel_side * sinf(bot_stats.angle.asRadians() + 1.5708f);
+		bot_stats.dy += bot_stats.accel_side * cosf(bot_stats.angle.asRadians() + 1.5708f);
 	}
 
 	// processing of rotation
-	if (getkey.a && bot_stats.rotation > -bot_stats.cap_rotation)
+	if (getkey.a && !getkey.d && bot_stats.rotation > -bot_stats.cap_rotation)
 		bot_stats.rotation -= bot_stats.spd_rotation;
-	if (getkey.d && bot_stats.rotation < bot_stats.cap_rotation)
+	if (getkey.d && !getkey.a && bot_stats.rotation < bot_stats.cap_rotation)
 		bot_stats.rotation += bot_stats.spd_rotation;
+	
+	if (getkey.a && getkey.d && !bot_event_processed.u_turn)
+	{
+		bot.rotate(sf::degrees(180));
+		bot_event_processed.u_turn = true;
+	}
+	if (!getkey.a && !getkey.d && bot_event_processed.u_turn)
+		bot_event_processed.u_turn = false;
 
 	if (!getkey.a && !getkey.d && !(bot_stats.rotation == 0))
 	{
@@ -121,27 +140,32 @@ void bot_processing_input()
 
 void bot_proc_phys()
 {
-	sf::Vector2f pos = bot.getPosition();
 	
-	if (pos.x < 0)
+	// getting current position of bot
+	sf::Vector2f pos = bot.getPosition();
+
+	// TODO - TO BE REDONE WHEN LEVEL IS MADE (CURRENTLY IT'S BOUNCING INSIDE A WINDOW)
+	// TODO - CONSIDER BOT'S SIZE ! !
+	// comparing if it's out of legal playing bounds
+	if (pos.x < 12 && bot_stats.dx < 0)
 	{
 		bot_stats.dx *= bot_stats.bounce_accel;
-		bot.setPosition({1.f,pos.y});
+		bot.setPosition({pos.x + (bot_stats.dx * 2),pos.y});
 	}
-	if (pos.x > window_size.x)
+	if (pos.x > window_size.x - 12 && bot_stats.dx > 0)
 	{
 		bot_stats.dx *= bot_stats.bounce_accel;
-		bot.setPosition({ (window_size.x - 1.f) ,pos.y });
+		bot.setPosition({ (pos.x + bot_stats.dx * 2) ,pos.y });
 	}
-	if (pos.y < 0)
+	if (pos.y < 12 && bot_stats.dy < 0)
 	{
 		bot_stats.dy *= bot_stats.bounce_accel;
-		bot.setPosition({ pos.x, 1.f });
+		bot.setPosition({ pos.x, (pos.y + bot_stats.dy * 2) });
 	}
-	if (pos.y > window_size.y)
+	if (pos.y > window_size.y - 12 && bot_stats.dy > 0)
 	{
 		bot_stats.dy *= bot_stats.bounce_accel;
-		bot.setPosition({ pos.x ,(window_size.y - 1.f) });
+		bot.setPosition({ pos.x ,(pos.y + bot_stats.dy * 2) });
 	}
 }
 
@@ -155,20 +179,19 @@ void bot_proc_phys()
   \___\___/|_| |_| |_|_.__/ \___/  |_|  \__,_|_| |_|\___|___/ (=)
 */
 
-// processing rotation, movement (and to be implemented - collision and something else idk)
+// processing rotation, movement and physics (collision)
 void bot_processing_movement()
 {
 	bot.rotate(sf::degrees(bot_stats.rotation));
-	bot.move({ bot_stats.dx, -bot_stats.dy });
+	bot.move({ bot_stats.dx, bot_stats.dy });
+	bot_proc_phys();
 }
 																				// janky var init, for realtime in-game debug text
 																				char debugtext[48];
 
 void bot_loop()
 {
-	// here i implemented input throttling by timer.
-	// did it in mind of debugging when CPU couldn't handle all the maths.
-	// cuurrently it does... really... nothing useful.
+	// here i implemented input throttling by timer
 	if (input_update_clock.getElapsedTime() > cap_input_update)
 	{
 		bot_processing_input();
@@ -176,12 +199,10 @@ void bot_loop()
 	}
 
 	//calling other functions to complete the full processing
-	if (firstcall < 2)
-		firstcall += 1;
-	else
-		bot_proc_phys();
+		
 	bot_processing_movement();
-	
+
 																				// janky sprintf_s, to feed some variables to debugtext[40]
-																				sprintf_s(debugtext, "e %f %f", (bot_stats.dx), bot_stats.dy);
+																				sf::Vector2f pos = bot.getPosition();
+																				sprintf_s(debugtext, "o %f %f", (pos.x), pos.y);
 }

@@ -152,6 +152,7 @@
     <ClInclude Include="keyboard-to-bool.h" />
     <ClInclude Include="level.h" />
     <ClInclude Include="bot.h" />
+    <ClInclude Include="ui.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,0 +1,17 @@
+white(255,255,255) - space
+black(0,0,0) - wall (collidable)
+red(255) - door (removable wall)
+green(255) - interaction
+blue(255) - spawnpoint
+blue(127) - end of level
+
+for each room:
+from left to right,
+from up to down:
+	place for keycard that opens the door
+	bot fabricator
+	map loader
+	pickupable
+	buntton that opens the door
+	repair station
+	charge station

@@ -13,6 +13,8 @@
 
 #include "bot.h"
 #include "keyboard-to-bool.h"
+#include "level.h"
+#include "ui.h"
 
 int main()
 {
@@ -23,34 +25,43 @@ int main()
     #endif
 
     // create a main_window, next line - cap it's framerate (and with it - update rate) to 60
-    sf::RenderWindow main_window(sf::VideoMode({ 1280, 720 }), "escape the void, the game", sf::Style::Default, sf::State::Windowed);
+    sf::RenderWindow main_window
+                     (sf::VideoMode({ 1280, 720 }),
+                         "escape the void, the game",
+                         sf::Style::Default,
+                         sf::State::Windowed);
     main_window.setFramerateLimit(60);
+    main_window.clear(sf::Color::Black);
+    
+    sf::Image main_window_icon("textures/quill.png");
+    main_window.setIcon(main_window_icon);
+    
 
         // init code
     bot_init();
+    ui::proc.text_init(main_window.getSize(), true);
+    
+    // create a default and camera view
+    sf::View default_view;
+    sf::View camera_view;
+    // set size&center for views
+    if (true)
+    {
+        float x = (main_window.getSize().x / 2);
+        float y = (main_window.getSize().y / 2);
+        default_view.setCenter( { x, y } );
+        camera_view.setCenter({ x, y });
+        
+        x = main_window.getSize().x;
+        y = main_window.getSize().y;
+        default_view.setSize({ x, y });
+        camera_view.setSize({ x, y });
+    }
+    // create boolean to toggle between views
+    bool view_mode = false; // false for camera_view, true for default_view
+    bool view_toggle_helper = false;
 
-    //init terminus font
-    sf::Font f_terminus("fonts/terminus.ttf");
-    // init text, currently for debug goals
-    sf::Text debugger_text(f_terminus);
-    debugger_text.setCharacterSize(36);
-    debugger_text.setFillColor(sf::Color::White);
-    debugger_text.setStyle(sf::Text::Regular);
-    debugger_text.setPosition({ 10.f, 674.f });
-    debugger_text.setString("d");
 
-    // init text for movement tooltip
-    sf::Text tooltip_text(f_terminus);
-    tooltip_text.setCharacterSize(24);
-    tooltip_text.setFillColor(sf::Color::White);
-    tooltip_text.setStyle(sf::Text::Regular);
-    tooltip_text.setPosition({ 10.f, 10.f });
-    tooltip_text.setString
-    (" W/A - acceleration \n A/D - rotation \n Q+E - stop \n F1 - show this tooltip");
-    // init timer for autohiding tooltip
-    sf::Clock tooltip_hide_timer;
-    sf::Time tooltip_autohide_delay = sf::seconds(3);
-    tooltip_hide_timer.restart();
 
 
     // main WHILE loop
@@ -67,32 +78,53 @@ int main()
         {
             main_window.close();
         }
+        // TODO update window and views as it's resized
 
-        //out-of-drawing loop code
+
+
+            //out-of-drawing loop code
+        // imo i don't need to explain what's happening here
         key_upd_full();
         bot_loop();
-        // handling auto-hiding of tooltip
-        if (tooltip_hide_timer.getElapsedTime() > tooltip_autohide_delay)
-             tooltip_text.setFillColor(sf::Color(255, 255, 255, 0));
-        else tooltip_text.setFillColor(sf::Color(255, 255, 255, 255));
-
-        if (getkey.f1) tooltip_hide_timer.restart();
-
+        // updating camera_view as bot moves
+        camera_view.setCenter({ bot.getPosition() });
+        camera_view.setRotation( bot.getRotation() );
+        // updating 
+        window_size = main_window.getSize();
+        ui::debugger_text.setString(debugtext);
+        // handling the view mode
+        if (getkey.f2 && !view_toggle_helper) view_toggle_helper = true;
+        if (!getkey.f2 && view_toggle_helper)
+        {
+            view_mode = !view_mode;
+            view_toggle_helper = false;
+        }
+        // fuck last seven lines made me feel stupid, very stupid
 
         main_window.clear(sf::Color::Black);
 
-        // drawing loop code
-        if (true)
-        {
-            window_size = main_window.getSize();
-            main_window.draw(bot);
-        }
 
-        //debug text drawing
-        debugger_text.setString(debugtext);
+
+            // drawing loop code
+                // setting view to draw the game thingies
+        if (view_mode) main_window.setView(camera_view);
+        // draw actual game contents
+        main_window.draw(bot);
+
+
+
+        // setting view to default_view for drawing UI
+        main_window.setView(default_view);
+
+        ui::proc.text_loop();
+        ////managing tooltip auto-hiding
+        //if (!(tooltip_hide_timer.getElapsedTime() > tooltip_autohide_delay))
+        //    main_window.draw(tooltip_text);
+        ////debug text drawing
+        main_window.draw(ui::debugger_text);
+        if (ui::draw_tooltip) main_window.draw(ui::tooltip_text);
+
         
-        main_window.draw(tooltip_text);
-        main_window.draw(debugger_text);
         main_window.display();
     }
 }

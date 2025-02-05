@@ -34,5 +34,8 @@
     <ClInclude Include="keyboard-to-bool.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="ui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
