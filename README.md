@@ -14,3 +14,6 @@ find it, repair it, and escape the void you're stuck in.
 used IDE: Visual Studio 2022;
 used SFML version: 3.0.0;
 used brain potential: null;
+
+//>>>>>>>>>>>>>>>>>>
+this is temporary repo, to be archived after a complete demo is done
