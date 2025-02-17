@@ -40,7 +40,7 @@ namespace ui
             tooltip_text.setPosition({ 10.f, 10.f });
             tooltip_text.setString
             (" W/S - acceleration \n A/D - rotation \n A+D - u-turn \n Q/E - side move \n Q+E - stop \n F2 - toggle view mode \n F1 - show this tooltip");
-            tooltip_text.setOutlineThickness(1);
+            tooltip_text.setOutlineThickness(3);
 
             // init timer for autohiding tooltip
             tooltip_hide_timer.restart();

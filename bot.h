@@ -30,6 +30,8 @@ public:
 	const float accel = 0.3f;
 		// acceleration of left or right movement (relative to current angle)
 	const float accel_side = accel / 2;
+		// value for q+e decelerator, imo it should be overpowered a little
+	const float decel = accel * 2;
 		// acceleration of rotation
 	const int spd_rotation = 1;
 		// max (speed of) rotation
@@ -125,15 +127,15 @@ void bot_processing_input()
 	if (getkey.q && getkey.e)
 	{
 		if (bot_stats.dx < -bot_stats.accel)
-			bot_stats.dx += bot_stats.accel;
+			bot_stats.dx += bot_stats.decel;
 		else if (bot_stats.dx > bot_stats.accel)
-			bot_stats.dx -= bot_stats.accel;
+			bot_stats.dx -= bot_stats.decel;
 		else bot_stats.dx = 0;
 
 		if (bot_stats.dy < -bot_stats.accel)
-			bot_stats.dy += bot_stats.accel;
+			bot_stats.dy += bot_stats.decel;
 		else if (bot_stats.dy > bot_stats.accel)
-			bot_stats.dy -= bot_stats.accel;
+			bot_stats.dy -= bot_stats.decel;
 		else bot_stats.dy = 0;
 	}
 }
@@ -147,26 +149,7 @@ void bot_proc_phys()
 	// TODO - TO BE REDONE WHEN LEVEL IS MADE (CURRENTLY IT'S BOUNCING INSIDE A WINDOW)
 	// TODO - CONSIDER BOT'S SIZE ! !
 	// comparing if it's out of legal playing bounds
-	if (pos.x < 12 && bot_stats.dx < 0)
-	{
-		bot_stats.dx *= bot_stats.bounce_accel;
-		bot.setPosition({pos.x + (bot_stats.dx * 2),pos.y});
-	}
-	if (pos.x > window_size.x - 12 && bot_stats.dx > 0)
-	{
-		bot_stats.dx *= bot_stats.bounce_accel;
-		bot.setPosition({ (pos.x + bot_stats.dx * 2) ,pos.y });
-	}
-	if (pos.y < 12 && bot_stats.dy < 0)
-	{
-		bot_stats.dy *= bot_stats.bounce_accel;
-		bot.setPosition({ pos.x, (pos.y + bot_stats.dy * 2) });
-	}
-	if (pos.y > window_size.y - 12 && bot_stats.dy > 0)
-	{
-		bot_stats.dy *= bot_stats.bounce_accel;
-		bot.setPosition({ pos.x ,(pos.y + bot_stats.dy * 2) });
-	}
+	
 }
 
 
@@ -188,6 +171,8 @@ void bot_processing_movement()
 }
 																				// janky var init, for realtime in-game debug text
 																				char debugtext[48];
+																				sf::Color dbgcolor = sf::Color(255, 0, 0, 255);
+																				uint32_t dbgval = 0xFF00FFFFAA;
 
 void bot_loop()
 {
@@ -204,5 +189,5 @@ void bot_loop()
 
 																				// janky sprintf_s, to feed some variables to debugtext[40]
 																				sf::Vector2f pos = bot.getPosition();
-																				sprintf_s(debugtext, "o %f %f", (pos.x), pos.y);
+																				sprintf_s(debugtext, "o %08X %08X", dbgcolor.toInteger(), dbgval);
 }

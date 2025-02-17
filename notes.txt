@@ -1,1 +1,16 @@
 viau - name for something
+
+bot:
+
+	manual mode:
+		free angle movement
+		unlimited speed
+	auto mode:
+		auto stop towards the wall or entry
+		angle snapping
+		speed limit
+		automatic side movement cancellation
+
+
+collider
+	how do i calculate a vector collision?

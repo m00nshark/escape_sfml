@@ -36,10 +36,12 @@ int main()
     sf::Image main_window_icon("textures/quill.png");
     main_window.setIcon(main_window_icon);
     
+    sf::RenderWindow* main_window_ptr = &main_window;
 
         // init code
     bot_init();
     ui::proc.text_init(main_window.getSize(), true);
+    level::tutorial.init();
     
     // create a default and camera view
     sf::View default_view;
@@ -57,6 +59,7 @@ int main()
         default_view.setSize({ x, y });
         camera_view.setSize({ x, y });
     }
+    bot.setPosition(level::tutorial.spawnpoint);
     // create boolean to toggle between views
     bool view_mode = false; // false for camera_view, true for default_view
     bool view_toggle_helper = false;
@@ -88,7 +91,8 @@ int main()
         bot_loop();
         // updating camera_view as bot moves
         camera_view.setCenter({ bot.getPosition() });
-        camera_view.setRotation( bot.getRotation() );
+        if (view_mode) camera_view.setRotation(bot.getRotation());
+        else camera_view.setRotation(sf::radians(0));
         // updating 
         window_size = main_window.getSize();
         ui::debugger_text.setString(debugtext);
@@ -100,6 +104,7 @@ int main()
             view_toggle_helper = false;
         }
         // fuck last seven lines made me feel stupid, very stupid
+        
 
         main_window.clear(sf::Color::Black);
 
@@ -107,7 +112,8 @@ int main()
 
             // drawing loop code
                 // setting view to draw the game thingies
-        if (view_mode) main_window.setView(camera_view);
+        main_window.setView(camera_view);
+        level::tutorial.drawmap(main_window);
         // draw actual game contents
         main_window.draw(bot);
 
@@ -123,7 +129,6 @@ int main()
         ////debug text drawing
         main_window.draw(ui::debugger_text);
         if (ui::draw_tooltip) main_window.draw(ui::tooltip_text);
-
         
         main_window.display();
     }

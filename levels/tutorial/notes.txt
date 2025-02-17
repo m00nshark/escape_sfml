@@ -1,9 +1,10 @@
 white(255,255,255) - space
+grey(127,127,127,255) - floor
 black(0,0,0) - wall (collidable)
 red(255) - door (removable wall)
 green(255) - interaction
 blue(255) - spawnpoint
-blue(127) - end of level
+dark green(127) - end of level
 
 for each room:
 from left to right,
@@ -15,3 +16,12 @@ from up to down:
 	buntton that opens the door
 	repair station
 	charge station
+
+(
+sf::color.toInteger hint:
+black = 			000000FF
+blue(0,0,255,255) = 		0000FFFF
+dark blue(0,0,127,255) = 	00007FFF
+red(0,0,127,255) =	 	FF0000FF
+green(0,255,0,255) = 		00FF00FF
+)
