@@ -26,6 +26,7 @@ class
 {
 public:
 			// static parameters
+	float bot_radius = 12;
 		// acceleration of forward or backward movement (relative to current angle)
 	const float accel = 0.3f;
 		// acceleration of left or right movement (relative to current angle)
@@ -41,9 +42,9 @@ public:
 
 			// dynamic parameters
 		// current speed for in-game X coord
-	float dx = 0.f;
+	float dx = 0.10f;
 		// current speed for in-game Y coord
-	float dy = 0.f;
+	float dy = 0.25f;
 		// current angle, relative to in-game XY coords
 	sf::Angle angle = sf::degrees(0);
 		// current (speed of) rotation as degrees
@@ -51,7 +52,14 @@ public:
 	
 } bot_stats;
 
+template <typename T> int sgn(T val) {
+	return (T(0) < val) - (val < T(0));
+}
 
+float sign_floated(float val)
+{
+	return (0 < val) - (val < 0);
+};
 
 /*
    __                            _                       _   _
@@ -76,17 +84,24 @@ void bot_processing_input()
 {
 	bot_stats.angle = bot.getRotation();
 
+	auto accelSin = bot_stats.accel* sinf(bot_stats.angle.asRadians());
+	auto accelCos = bot_stats.accel * cosf(bot_stats.angle.asRadians());
 	// processing of forwards or backwards movement
-	if (getkey.w)
-	{
-		bot_stats.dx += bot_stats.accel * sinf(bot_stats.angle.asRadians());
-		bot_stats.dy -= bot_stats.accel * cosf(bot_stats.angle.asRadians());
-	}	
-	if (getkey.s)
-	{
-		bot_stats.dx -= bot_stats.accel * sinf(bot_stats.angle.asRadians());
-		bot_stats.dy += bot_stats.accel * cosf(bot_stats.angle.asRadians());
-	}
+
+	float accelSign = getkey.w * 1 + getkey.s * -1;
+	bot_stats.dx = bot_stats.dx + accelSign * accelSin;
+	bot_stats.dy = bot_stats.dy - accelSign * accelCos;
+
+	//if (getkey.w)
+	//{
+	//	bot_stats.dx += bot_stats.accel * sinf(bot_stats.angle.asRadians());
+	//	bot_stats.dy -= bot_stats.accel * cosf(bot_stats.angle.asRadians());
+	//}	
+	//if (getkey.s)
+	//{
+	//	bot_stats.dx -= bot_stats.accel * sinf(bot_stats.angle.asRadians());
+	//	bot_stats.dy += bot_stats.accel * cosf(bot_stats.angle.asRadians());
+	//}
 
 	// processing side movement
 	if (getkey.e && !getkey.q)
@@ -116,9 +131,9 @@ void bot_processing_input()
 
 	if (!getkey.a && !getkey.d && !(bot_stats.rotation == 0))
 	{
-		if (bot_stats.rotation > bot_stats.spd_rotation - 2)
+		if (bot_stats.rotation > 0)
 			bot_stats.rotation -= bot_stats.spd_rotation;
-		else if (bot_stats.rotation < -bot_stats.spd_rotation + 2)
+		else if (bot_stats.rotation < 0)
 			bot_stats.rotation += bot_stats.spd_rotation;
 	}
 
@@ -126,31 +141,28 @@ void bot_processing_input()
 	// automatic processing of full deceleration and stop
 	if (getkey.q && getkey.e)
 	{
-		if (bot_stats.dx < -bot_stats.accel)
+		if (-.1 > bot_stats.dx && bot_stats.dx < .1) bot_stats.dx = 0.;
+		else bot_stats.dx += sgn((float)(bot_stats.dx < -bot_stats.accel) - 0.5f) * bot_stats.decel;
+
+		if (-.1 > bot_stats.dy && bot_stats.dy < .1) bot_stats.dy = 0.;
+		else bot_stats.dy += sgn((float)(bot_stats.dy < -bot_stats.accel) - 0.5f) * bot_stats.decel;
+		
+
+		/*if (bot_stats.dx < -bot_stats.accel)
 			bot_stats.dx += bot_stats.decel;
 		else if (bot_stats.dx > bot_stats.accel)
 			bot_stats.dx -= bot_stats.decel;
 		else bot_stats.dx = 0;
-
+		
 		if (bot_stats.dy < -bot_stats.accel)
 			bot_stats.dy += bot_stats.decel;
 		else if (bot_stats.dy > bot_stats.accel)
 			bot_stats.dy -= bot_stats.decel;
-		else bot_stats.dy = 0;
+		else bot_stats.dy = 0;*/
 	}
 }
 
-void bot_proc_phys()
-{
-	
-	// getting current position of bot
-	sf::Vector2f pos = bot.getPosition();
 
-	// TODO - TO BE REDONE WHEN LEVEL IS MADE (CURRENTLY IT'S BOUNCING INSIDE A WINDOW)
-	// TODO - CONSIDER BOT'S SIZE ! !
-	// comparing if it's out of legal playing bounds
-	
-}
 
 
 /*
@@ -167,12 +179,9 @@ void bot_processing_movement()
 {
 	bot.rotate(sf::degrees(bot_stats.rotation));
 	bot.move({ bot_stats.dx, bot_stats.dy });
-	bot_proc_phys();
 }
 																				// janky var init, for realtime in-game debug text
 																				char debugtext[48];
-																				sf::Color dbgcolor = sf::Color(255, 0, 0, 255);
-																				uint32_t dbgval = 0xFF00FFFFAA;
 
 void bot_loop()
 {
@@ -189,5 +198,5 @@ void bot_loop()
 
 																				// janky sprintf_s, to feed some variables to debugtext[40]
 																				sf::Vector2f pos = bot.getPosition();
-																				sprintf_s(debugtext, "o %08X %08X", dbgcolor.toInteger(), dbgval);
+																				sprintf_s(debugtext, "o %f %f", pos.x / 12, pos.y / 12);
 }

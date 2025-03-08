@@ -1,3 +1,9 @@
+TODO
+	- collision via line intersection
+	- git add sfml (?)
+
+
+
 viau - name for something
 
 bot:

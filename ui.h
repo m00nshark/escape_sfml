@@ -1,4 +1,6 @@
 #pragma once
+#include "keyboard-to-bool.h"
+#include "level.h"
 
 namespace ui
 {

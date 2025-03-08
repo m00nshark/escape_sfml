@@ -1,36 +1,44 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "bot.h"
+#include <cmath>
 
 namespace level
 {
-	// initialize textures & sprites for drawing sprited map
-	sf::Texture t_space("textures/space.bmp");
-		sf::Sprite space(t_space);
-	sf::Texture t_floor("textures/floor.bmp");
-		sf::Sprite floor(t_floor);
-	sf::Texture t_wall("textures/wall.bmp");
-		sf::Sprite wall(t_wall);
-	sf::Texture t_door("textures/door.bmp");
-		sf::Sprite door(t_door);
-	sf::Texture t_interaction("textures/interaction.bmp");
-		sf::Sprite interaction(t_interaction);
-	sf::Texture txtr_error("textures/error.bmp");
-		sf::Sprite sprite_error(txtr_error);
-	// initialize a spawnpoint variable for main bot
-	sf::Vector2f spawnpoint(128.f, 128.f);
+	
 
-	// enumerate types of cells
-	enum class cell_type { space, floor, wall, door, interaction, spawn, end, sprite_error };
-	// set a size for map
-	const int cellmap_size_x = 256;
-	const int cellmap_size_y = 128;
-	// array that stores types of cells in map
-	cell_type cellmap[cellmap_size_x][cellmap_size_y];
-	// for unfixed sizes of mapper-bmps, create an array that stores it's size
-	unsigned int map_size[2];
-	// define cell size, in pixels. needed for correct cell display
-	int cell_size = 24;
+		// initialize textures & sprites for drawing sprited map
+		sf::Texture t_space("textures/space.bmp");
+			sf::Sprite space(t_space);
+		sf::Texture t_floor("textures/floor.bmp");
+			sf::Sprite floor(t_floor);
+		sf::Texture t_wall("textures/wall.bmp");
+			sf::Sprite wall(t_wall);
+		sf::Texture t_door("textures/door.bmp");
+			sf::Sprite door(t_door);
+		sf::Texture t_interaction("textures/interaction.bmp");
+			sf::Sprite interaction(t_interaction);
+		sf::Texture txtr_error("textures/error.bmp");
+			sf::Sprite sprite_error(txtr_error);
 
+		sf::Sprite* sprite_atlas[] = { &space , &floor , &wall , &door , &interaction , &interaction, &floor, &sprite_error};
+		// initialize a spawnpoint variable for main bot
+		sf::Vector2f spawnpoint(128.f, 128.f);
+
+		// enumerate types of cells
+		enum class cell_type { space, floor, wall, door, interaction, spawn, end, sprite_error };
+		// set a size for map
+		const int cellmap_size_x = 100;
+		const int cellmap_size_y = 50;
+		// array that stores types of cells in map
+		cell_type cellmap[cellmap_size_x][cellmap_size_y];
+		// for unfixed sizes of mapper-bmps, create an array that stores it's size
+		unsigned int map_size[2];
+		// define cell size, in pixels. needed for correct cell display
+		int cell_size = 24;
+		sf::Clock collider_cooldown;
+		
+		bool collider_event = false;
 	class
 	{
 
@@ -60,8 +68,11 @@ namespace level
 						{
 							cellmap[m][n] = cell_type::spawn;
 							spawnpoint = sf::Vector2f(
-								{ m * cell_size * 1.f + cell_size * 0.5f ,
-								n * cell_size * 1.f + cell_size * 0.5f });
+								{
+									m * cell_size * 1.f + cell_size * 0.5f ,
+									n * cell_size * 1.f + cell_size * 0.5f
+								}
+							);
 							break;
 						}
 						
@@ -85,6 +96,9 @@ namespace level
 
 	public:	
 
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
 		sf::Vector2f spawnpoint;
 
 		void init()
@@ -92,74 +106,46 @@ namespace level
 			genmap();
 			set_smooth();
 		}
-		
+
+		int clamp(int x, int a, int b)
+		{	
+			return MAX(MIN(x, b), a);
+		}
+
 		// map drawer, so you move not in the void, but somewhere
 		void drawmap(sf::RenderWindow &wndw)
 		{
-			for (unsigned int m = 1; m <= map_size[0]; m++)
+			for (unsigned int m = 0; m <= map_size[0]; m++)
 			{
-				for (unsigned int n = 1; n <= map_size[1]; n++)
+				for (unsigned int n = 0; n <= map_size[1]; n++)
 				{
-					switch (cellmap[m][n])
-					{
-					case cell_type::space:
-					{
-						space.setPosition({ (cell_size * m) * 1.f, (cell_size * n) * 1.f });
-						wndw.draw(space);
-						break;
-					}
-					case cell_type::floor:
-					{
-						floor.setPosition({ (cell_size * m) * 1.f, (cell_size * n) * 1.f });
-						wndw.draw(floor);
-						break;
-					}
-					case cell_type::wall:
-					{
-						wall.setPosition({ (cell_size * m) * 1.f, (cell_size * n) * 1.f });
-						wndw.draw(wall);
-						break;
-					}
-					case cell_type::door:
-					{
-						door.setPosition({ (cell_size * m) * 1.f, (cell_size * n) * 1.f });
-						wndw.draw(door);
-						break;
-					}
-					case cell_type::interaction:
-					{
-						interaction.setPosition({ (cell_size * m) * 1.f, (cell_size * n) * 1.f });
-						wndw.draw(interaction);
-						break;
-					}
-					case cell_type::spawn:
-					{
-						interaction.setPosition({ (cell_size * m) * 1.f, (cell_size * n) * 1.f });
-						wndw.draw(interaction);
-						break;
-					}
-					case cell_type::end:
-					{
-						floor.setPosition({ (cell_size * m) * 1.f, (cell_size * n) * 1.f });
-						wndw.draw(floor);
-						break;
-					}
-					case cell_type::sprite_error:
-					{
-						sprite_error.setPosition({ (cell_size * m) * 1.f, (cell_size * n) * 1.f });
-						wndw.draw(sprite_error);
-						break;
-					}
-					}
+					sf::Vector2f pos = { (cell_size * m) * 1.f, (cell_size * n) * 1.f };
+					auto spriteID = clamp((int)cellmap[m][n],0,7);
+					sprite_atlas[spriteID]->setPosition(pos);
+					wndw.draw(*sprite_atlas[spriteID]);
 				}
 			}
 		}
 
-		// TODO clean up the memory when current map is not needed any more
-		void cleanup()
+		void collider()
 		{
+			int bot_xc = bot.getPosition().x / cell_size - 12;
+			int bot_yc = bot.getPosition().y / cell_size + 0;
+			float bot_colpt_x = 0;
+			float bot_colpt_y = 0;
+			
+			if (cellmap[bot_xc + 12][bot_yc] == cell_type::wall
+				||
+				cellmap[bot_xc + 12][bot_yc] == cell_type::door
+				)
+			{
+				if (!collider_event)
+				{
+					collider_event = 1;
+				}
+			}
+			else collider_event = 0;
 		}
-
 	} tutorial;
 
 }

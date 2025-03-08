@@ -1,8 +1,3 @@
-/*
-        a main file. all stuff related to main_window management should be put here and not anywhere else.
-        (reminder for myself)
-*/
-
 #include <SFML/System.hpp>
 #include <SFML/Main.hpp>
 #include <SFML/Graphics.hpp>
@@ -11,10 +6,10 @@
 #include <cmath>
 #include "math.h"
 
-#include "bot.h"
-#include "keyboard-to-bool.h"
-#include "level.h"
 #include "ui.h"
+
+
+
 
 int main()
 {
@@ -26,7 +21,7 @@ int main()
 
     // create a main_window, next line - cap it's framerate (and with it - update rate) to 60
     sf::RenderWindow main_window
-                     (sf::VideoMode({ 1280, 720 }),
+                     (sf::VideoMode({ 1800, 920 }),
                          "escape the void, the game",
                          sf::Style::Default,
                          sf::State::Windowed);
@@ -35,8 +30,6 @@ int main()
     
     sf::Image main_window_icon("textures/quill.png");
     main_window.setIcon(main_window_icon);
-    
-    sf::RenderWindow* main_window_ptr = &main_window;
 
         // init code
     bot_init();
@@ -47,7 +40,7 @@ int main()
     sf::View default_view;
     sf::View camera_view;
     // set size&center for views
-    if (true)
+  
     {
         float x = (main_window.getSize().x / 2);
         float y = (main_window.getSize().y / 2);
@@ -61,7 +54,7 @@ int main()
     }
     bot.setPosition(level::tutorial.spawnpoint);
     // create boolean to toggle between views
-    bool view_mode = false; // false for camera_view, true for default_view
+    bool view_mode = true; // false for camera_view, true for default_view
     bool view_toggle_helper = false;
 
 
@@ -89,6 +82,7 @@ int main()
         // imo i don't need to explain what's happening here
         key_upd_full();
         bot_loop();
+        level::tutorial.collider();
         // updating camera_view as bot moves
         camera_view.setCenter({ bot.getPosition() });
         if (view_mode) camera_view.setRotation(bot.getRotation());
