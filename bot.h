@@ -39,12 +39,19 @@ public:
 	const int cap_rotation = 20;
 		// bounce acceleration (should be multiplied on)
 	const float bounce_accel = -0.5;
+		// max relative speed of bot
+	const float cap_speed_const = 5;
+
 
 			// dynamic parameters
+		// thing for elevating speed limit
+	float cap_speed = 5;
+		// thing for setting destined angle of rotation
+	sf::Angle destined_rotation = sf::degrees(90);
 		// current speed for in-game X coord
-	float dx = 0.10f;
+	float dx = 0.f;
 		// current speed for in-game Y coord
-	float dy = 0.25f;
+	float dy = 0.f;
 		// current angle, relative to in-game XY coords
 	sf::Angle angle = sf::degrees(0);
 		// current (speed of) rotation as degrees
@@ -56,10 +63,7 @@ template <typename T> int sgn(T val) {
 	return (T(0) < val) - (val < T(0));
 }
 
-float sign_floated(float val)
-{
-	return (0 < val) - (val < 0);
-};
+
 
 /*
    __                            _                       _   _
@@ -84,7 +88,7 @@ void bot_processing_input()
 {
 	bot_stats.angle = bot.getRotation();
 
-	auto accelSin = bot_stats.accel* sinf(bot_stats.angle.asRadians());
+	auto accelSin = bot_stats.accel * sinf(bot_stats.angle.asRadians());
 	auto accelCos = bot_stats.accel * cosf(bot_stats.angle.asRadians());
 	// processing of forwards or backwards movement
 
@@ -120,7 +124,7 @@ void bot_processing_input()
 		bot_stats.rotation -= bot_stats.spd_rotation;
 	if (getkey.d && !getkey.a && bot_stats.rotation < bot_stats.cap_rotation)
 		bot_stats.rotation += bot_stats.spd_rotation;
-	
+
 	if (getkey.a && getkey.d && !bot_event_processed.u_turn)
 	{
 		bot.rotate(sf::degrees(180));
@@ -137,29 +141,45 @@ void bot_processing_input()
 			bot_stats.rotation += bot_stats.spd_rotation;
 	}
 
-	// CURRENT SEGMENT OF CODE DOWN HERE IS GOING TO BE REMADE FOR BETTER PHYSIX.
 	// automatic processing of full deceleration and stop
 	if (getkey.q && getkey.e)
 	{
-		if (-.1 > bot_stats.dx && bot_stats.dx < .1) bot_stats.dx = 0.;
+		if (-.5 < bot_stats.dx && bot_stats.dx < .5) bot_stats.dx = 0.;
 		else bot_stats.dx += sgn((float)(bot_stats.dx < -bot_stats.accel) - 0.5f) * bot_stats.decel;
 
-		if (-.1 > bot_stats.dy && bot_stats.dy < .1) bot_stats.dy = 0.;
+		if (-.5 < bot_stats.dy && bot_stats.dy < .5) bot_stats.dy = 0.;
 		else bot_stats.dy += sgn((float)(bot_stats.dy < -bot_stats.accel) - 0.5f) * bot_stats.decel;
-		
+
 
 		/*if (bot_stats.dx < -bot_stats.accel)
 			bot_stats.dx += bot_stats.decel;
 		else if (bot_stats.dx > bot_stats.accel)
 			bot_stats.dx -= bot_stats.decel;
 		else bot_stats.dx = 0;
-		
+
 		if (bot_stats.dy < -bot_stats.accel)
 			bot_stats.dy += bot_stats.decel;
 		else if (bot_stats.dy > bot_stats.accel)
 			bot_stats.dy -= bot_stats.decel;
 		else bot_stats.dy = 0;*/
 	}
+
+	if (
+		sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)
+		||
+		sf::Keyboard::isKeyPressed(sf::Keyboard::Key::RShift)
+		)
+		bot_stats.cap_speed += bot_stats.accel;
+	else
+	{
+		if (bot_stats.cap_speed > bot_stats.cap_speed_const)
+			bot_stats.cap_speed -= bot_stats.decel;
+	}
+	
+	if (abs(bot_stats.dx) > bot_stats.cap_speed)
+			bot_stats.dx = sgn(bot_stats.dx) * bot_stats.cap_speed;
+	if (abs(bot_stats.dy) > bot_stats.cap_speed)
+			bot_stats.dy = sgn(bot_stats.dy) * bot_stats.cap_speed;
 }
 
 

@@ -38,6 +38,8 @@ namespace level
 		int cell_size = 24;
 		sf::Clock collider_cooldown;
 		
+		sf::Vector2f prev_player_pos({ 0.f,0.f });
+
 		bool collider_event = false;
 	class
 	{
@@ -141,11 +143,16 @@ namespace level
 			{
 				if (!collider_event)
 				{
+
 					collider_event = 1;
 				}
 			}
 			else collider_event = 0;
+
+			prev_player_pos = bot.getPosition();
 		}
 	} tutorial;
 
 }
+
+//Simple F Media Library
