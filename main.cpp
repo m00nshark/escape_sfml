@@ -69,7 +69,21 @@ int main()
         {
             if (event->is<sf::Event::Closed>())
                 main_window.close();
+
+            if (event->is<sf::Event::Resized>()) {
+                // resize my view
+                camera_view.setSize(
+                    {
+                        (float)main_window.getSize().x,
+                        (float)main_window.getSize().y
+                    });
+                default_view.setSize(camera_view.getSize());
+                main_window.setView(camera_view);
+            }
         }
+
+
+
         // exit on pressing ESC key, legacy of 0f0x64's PONG
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))  // seek for pressing an ESC button, close main_window if true
         {

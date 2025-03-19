@@ -36,11 +36,7 @@ namespace level
 		unsigned int map_size[2];
 		// define cell size, in pixels. needed for correct cell display
 		int cell_size = 24;
-		sf::Clock collider_cooldown;
-		
-		sf::Vector2f prev_player_pos({ 0.f,0.f });
 
-		bool collider_event = false;
 	class
 	{
 
@@ -86,7 +82,8 @@ namespace level
 
 		}
 
-		// smooth the cunt out of these textures (they still cut your eye like paper lol)
+		// smooth the cunt out of these textures (they still cut your eye
+		// like paper cuts that place between your fingers lol)
 		void set_smooth()
 		{
 			t_space.setSmooth(true);
@@ -129,30 +126,14 @@ namespace level
 			}
 		}
 
+		sf::Vector2u col_curr_pos;
+		sf::Vector2u col_prev_pos;
+
 		void collider()
 		{
-			int bot_xc = bot.getPosition().x / cell_size - 12;
-			int bot_yc = bot.getPosition().y / cell_size + 0;
-			float bot_colpt_x = 0;
-			float bot_colpt_y = 0;
-			
-			if (cellmap[bot_xc + 12][bot_yc] == cell_type::wall
-				||
-				cellmap[bot_xc + 12][bot_yc] == cell_type::door
-				)
-			{
-				if (!collider_event)
-				{
+			col_curr_pos = {(UINT)(bot.getPosition().x / cell_size) , (UINT)(bot.getPosition().y / cell_size)};
 
-					collider_event = 1;
-				}
-			}
-			else collider_event = 0;
-
-			prev_player_pos = bot.getPosition();
 		}
 	} tutorial;
 
 }
-
-//Simple F Media Library
