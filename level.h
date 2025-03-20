@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include "bot.h"
 #include <cmath>
+#include "utils.hpp"
 
 namespace level
 {
@@ -95,20 +96,12 @@ namespace level
 
 	public:	
 
-#define MIN(a,b) (((a)<(b))?(a):(b))
-#define MAX(a,b) (((a)>(b))?(a):(b))
-
 		sf::Vector2f spawnpoint;
 
 		void init()
 		{
 			genmap();
 			set_smooth();
-		}
-
-		int clamp(int x, int a, int b)
-		{	
-			return MAX(MIN(x, b), a);
 		}
 
 		// map drawer, so you move not in the void, but somewhere
@@ -126,12 +119,50 @@ namespace level
 			}
 		}
 
-		sf::Vector2u col_curr_pos;
-		sf::Vector2u col_prev_pos;
-
 		void collider()
 		{
-			col_curr_pos = {(UINT)(bot.getPosition().x / cell_size) , (UINT)(bot.getPosition().y / cell_size)};
+			sf::Vector2f col_curr_pos = bot.getPosition();
+			UINT col_rx = (col_curr_pos.x + 12) / cell_size;
+			UINT col_lx = (col_curr_pos.x - 12) / cell_size;
+			UINT col_uy = (col_curr_pos.y - 12) / cell_size;
+			UINT col_dy = (col_curr_pos.y + 12) / cell_size;
+		
+			if ((cellmap[col_rx][(UINT)(col_curr_pos.y / cell_size)] == cell_type::wall || cellmap[col_rx][(UINT)(col_curr_pos.y / cell_size)] == cell_type::door) && bot_stats.dx > 0)
+				bot_stats.dx *= -0.8;
+			if ((cellmap[col_lx][(UINT)(col_curr_pos.y / cell_size)] == cell_type::wall || cellmap[col_lx][(UINT)(col_curr_pos.y / cell_size)] == cell_type::door) && bot_stats.dx < 0)
+				bot_stats.dx *= -0.8;
+			if ((cellmap[(UINT)(col_curr_pos.x / cell_size)][col_uy] == cell_type::wall || cellmap[(UINT)(col_curr_pos.x / cell_size)][col_uy] == cell_type::door) && bot_stats.dy < 0)	
+				bot_stats.dy *= -0.8;
+			if ((cellmap[(UINT)(col_curr_pos.x / cell_size)][col_dy] == cell_type::wall || cellmap[(UINT)(col_curr_pos.x / cell_size)][col_dy] == cell_type::door) && bot_stats.dy > 0)
+				bot_stats.dy *= -0.8;
+		}
+
+			bool inter_heal, inter_batt, inter_map, inter_key1, inter_lock1, inter_lock2 = false;
+
+		void interaction(sf::View &view, sf::Text &text)
+		{
+			int xcoord = (int)bot.getPosition().x / cell_size;
+
+			if (cellmap[(UINT)(bot.getPosition().x / cell_size)][(UINT)(bot.getPosition().y / cell_size)] == cell_type::interaction)
+			{
+				if (63 < xcoord < 66 && !inter_lock1)
+				{
+
+					if (inter_key1) // for x = 50
+					{
+						text.setString("press f to open door №1");
+						if (bot_stats.interaction_call)
+						{
+							for (int y = 21; y < 24; y++) cellmap[50][y] = cell_type::floor;
+							inter_lock1 = true;
+						}
+					}
+					else text.setString("no available key for this lock");
+					text.setOrigin({ text.getGlobalBounds().getCenter().x, text.getGlobalBounds().getCenter().y });
+				}
+			}
+			else text.setString("kek");
+
 
 		}
 	} tutorial;

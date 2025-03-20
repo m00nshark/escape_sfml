@@ -39,7 +39,7 @@ void key_upd_full()
 	//getkey.c = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::C);
 	getkey.d = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D);
 	getkey.e = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::E);
-	//getkey.f = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F);
+	getkey.f = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F);
 
 	getkey.q = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q);
 	//getkey.r = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R);

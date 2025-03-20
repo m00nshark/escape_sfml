@@ -1,6 +1,7 @@
 #pragma once
 #include "keyboard-to-bool.h"
 #include <math.h>
+#include "utils.hpp"
 
 // some necessary variables. i think they talk for themselves
 // so i don't need to describe every of them with honour and fashion
@@ -14,10 +15,6 @@ sf::Vector2u window_size;
 class
 {
 public:
-	bool a_i = false;
-	bool d_i = false;
-	bool a_o = false;
-	bool d_o = false;
 	bool u_turn = false;
 } bot_event_processed;
 
@@ -28,7 +25,8 @@ public:
 			// static parameters
 	float bot_radius = 12;
 		// acceleration of forward or backward movement (relative to current angle)
-	const float accel = 0.3f;
+	const float accel_const = 0.3f;
+	float accel = accel_const;
 		// acceleration of left or right movement (relative to current angle)
 	const float accel_side = accel / 2;
 		// value for q+e decelerator, imo it should be overpowered a little
@@ -56,23 +54,11 @@ public:
 	sf::Angle angle = sf::degrees(0);
 		// current (speed of) rotation as degrees
 	float rotation = 0;
+		// interaction activator
+	bool interaction_call = false;
 	
 } bot_stats;
 
-template <typename T> int sgn(T val) {
-	return (T(0) < val) - (val < T(0));
-}
-
-
-
-/*
-   __                            _                       _   _
-  / _|                          | |                     | | | |
- | |_ _   _ _ __   ___ ___    __| | _____      ___ __   | |_| |__   ___ _ __ ___
- |  _| | | | '_ \ / __/ __|  / _` |/ _ \ \ /\ / / '_ \  | __| '_ \ / _ \ '__/ _ \
- | | | |_| | | | | (__\__ \ | (_| | (_) \ V  V /| | | | | |_| | | |  __/ | |  __/
- |_|  \__,_|_| |_|\___|___/  \__,_|\___/ \_/\_/ |_| |_|  \__|_| |_|\___|_|  \___|
-*/
 
 
 // initialization. starts the input-update clock, sets center-point and position.
@@ -86,26 +72,22 @@ void bot_init()
 // processing input, in result - modifying bot_stats parameters (speed for X&Y, rotation)
 void bot_processing_input()
 {
+	// interaction processing
+	if (getkey.f)
+	{
+		if (!bot_stats.interaction_call)
+			bot_stats.interaction_call = true;
+	}
+	else bot_stats.interaction_call = false;
+
 	bot_stats.angle = bot.getRotation();
 
+	// processing of forwards or backwards movement
 	auto accelSin = bot_stats.accel * sinf(bot_stats.angle.asRadians());
 	auto accelCos = bot_stats.accel * cosf(bot_stats.angle.asRadians());
-	// processing of forwards or backwards movement
-
 	float accelSign = getkey.w * 1 + getkey.s * -1;
 	bot_stats.dx = bot_stats.dx + accelSign * accelSin;
 	bot_stats.dy = bot_stats.dy - accelSign * accelCos;
-
-	//if (getkey.w)
-	//{
-	//	bot_stats.dx += bot_stats.accel * sinf(bot_stats.angle.asRadians());
-	//	bot_stats.dy -= bot_stats.accel * cosf(bot_stats.angle.asRadians());
-	//}	
-	//if (getkey.s)
-	//{
-	//	bot_stats.dx -= bot_stats.accel * sinf(bot_stats.angle.asRadians());
-	//	bot_stats.dy += bot_stats.accel * cosf(bot_stats.angle.asRadians());
-	//}
 
 	// processing side movement
 	if (getkey.e && !getkey.q)
@@ -149,31 +131,22 @@ void bot_processing_input()
 
 		if (-.5 < bot_stats.dy && bot_stats.dy < .5) bot_stats.dy = 0.;
 		else bot_stats.dy += sgn((float)(bot_stats.dy < -bot_stats.accel) - 0.5f) * bot_stats.decel;
-
-
-		/*if (bot_stats.dx < -bot_stats.accel)
-			bot_stats.dx += bot_stats.decel;
-		else if (bot_stats.dx > bot_stats.accel)
-			bot_stats.dx -= bot_stats.decel;
-		else bot_stats.dx = 0;
-
-		if (bot_stats.dy < -bot_stats.accel)
-			bot_stats.dy += bot_stats.decel;
-		else if (bot_stats.dy > bot_stats.accel)
-			bot_stats.dy -= bot_stats.decel;
-		else bot_stats.dy = 0;*/
 	}
 
-	if (
+	if ((
 		sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)
 		||
 		sf::Keyboard::isKeyPressed(sf::Keyboard::Key::RShift)
-		)
-		bot_stats.cap_speed += bot_stats.accel;
+		))
+	{
+		bot_stats.accel = bot_stats.accel_const * 3;
+		bot_stats.cap_speed = bot_stats.cap_speed_const*3;
+	}
 	else
 	{
 		if (bot_stats.cap_speed > bot_stats.cap_speed_const)
 			bot_stats.cap_speed -= bot_stats.decel;
+		bot_stats.accel = bot_stats.accel_const;
 	}
 	
 	if (abs(bot_stats.dx) > bot_stats.cap_speed)
@@ -184,25 +157,17 @@ void bot_processing_input()
 
 
 
-
-/*
-					  _              __
-					 | |            / _|                       
-   ___ ___  _ __ ___ | |__   ___   | |_ _   _ _ __   ___ ___  (=)
-  / __/ _ \| '_ ` _ \| '_ \ / _ \  |  _| | | | '_ \ / __/ __|
- | (_| (_) | | | | | | |_) | (_) | | | | |_| | | | | (__\__ \  
-  \___\___/|_| |_| |_|_.__/ \___/  |_|  \__,_|_| |_|\___|___/ (=)
-*/
-
 // processing rotation, movement and physics (collision)
 void bot_processing_movement()
 {
 	bot.rotate(sf::degrees(bot_stats.rotation));
 	bot.move({ bot_stats.dx, bot_stats.dy });
 }
-																				// janky var init, for realtime in-game debug text
-																				char debugtext[48];
 
+					// janky var init, for in-game debug text
+					char debugtext[48];
+
+																				
 void bot_loop()
 {
 	// here i implemented input throttling by timer
@@ -216,7 +181,7 @@ void bot_loop()
 		
 	bot_processing_movement();
 
-																				// janky sprintf_s, to feed some variables to debugtext[40]
-																				sf::Vector2f pos = bot.getPosition();
-																				sprintf_s(debugtext, "o %f %f", pos.x / 12, pos.y / 12);
+						// janky sprintf_s, to feed some variables to debugtext[48]
+						sf::Vector2f pos = bot.getPosition();
+						sprintf_s(debugtext, "dbg\ncoords(x/y): %.2f/%.2f", pos.x / 24, pos.y / 24);
 }

@@ -11,15 +11,16 @@ namespace ui
     // init text for key binding tooltip
     sf::Text tooltip_text(f_terminus);
     // 07:05 P.M., 3feb2025: my brain catched a null pointer exception. further descriptions are not going to be made
+    sf::Text interaction_text(f_terminus);
     sf::Clock tooltip_hide_timer;
-    sf::Time tooltip_autohide_delay = sf::seconds(6);
+    sf::Time tooltip_autohide_delay = sf::seconds(10);
     sf::Vector2u window_size;
     bool draw_tooltip = true;
     sf::RenderWindow window;
 
 	class
 	{
-		bool is_debug_enabled = false;
+		bool is_debug_enabled = true;
 
 
 
@@ -34,7 +35,7 @@ namespace ui
             debugger_text.setFillColor(sf::Color::White);
             debugger_text.setStyle(sf::Text::Regular);
             debugger_text.setString("not updated, check code");
-            debugger_text.setPosition({ 10.f, (window_size.y - 50.f) });
+            debugger_text.setPosition({ 10.f, (window_size.y - 90.f) });
             
             tooltip_text.setCharacterSize(24);
             tooltip_text.setFillColor(sf::Color::White);
@@ -43,6 +44,13 @@ namespace ui
             tooltip_text.setString
             (" W/S - acceleration \n A/D - rotation \n A+D - u-turn \n Q/E - side move \n Q+E - stop \n F2 - toggle view mode \n F1 - show this tooltip");
             tooltip_text.setOutlineThickness(3);
+
+            interaction_text.setCharacterSize(36);
+            interaction_text.setFillColor(sf::Color::White);
+            interaction_text.setStyle(sf::Text::Bold);
+            interaction_text.setString("woah");
+            interaction_text.setOrigin({ interaction_text.getGlobalBounds().getCenter().x, interaction_text.getGlobalBounds().getCenter().y });
+            interaction_text.setPosition({ w_s.x / 2.f, 200.f });
 
             // init timer for autohiding tooltip
             tooltip_hide_timer.restart();
@@ -60,5 +68,12 @@ namespace ui
             // updating debug stats
             debugger_text.setString(debugtext);
 		}
+
+        void text_update(sf::View &view)
+        {
+            debugger_text.setPosition({ 10.f, view.getSize().y - 90.f});
+            tooltip_text.setPosition({ 10.f,10.f });
+            interaction_text.setPosition({ window_size.x / 2.f, window_size.y - 150.f });
+        }
 	}proc;
 }

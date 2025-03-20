@@ -71,14 +71,27 @@ int main()
                 main_window.close();
 
             if (event->is<sf::Event::Resized>()) {
+                // handle minimal size of window
+                if (main_window.getSize().x < 500) main_window.setSize({ 500 , main_window.getSize().y });
+                if (main_window.getSize().y < 500) main_window.setSize({ main_window.getSize().x , 500 });
+
                 // resize my view
+                camera_view.setCenter(
+                    {
+                        (float)(UINT)(main_window.getSize().x / 2 ),
+                        (float)(UINT)(main_window.getSize().y / 2 )
+                    });
+                default_view.setCenter(camera_view.getCenter());
                 camera_view.setSize(
                     {
-                        (float)main_window.getSize().x,
-                        (float)main_window.getSize().y
-                    });
+                        (float)(UINT)(main_window.getSize().x / 2) * 2,
+                        (float)(UINT)(main_window.getSize().y / 2) * 2
+                    }
+                );
                 default_view.setSize(camera_view.getSize());
+
                 main_window.setView(camera_view);
+                ui::proc.text_update(default_view);
             }
         }
 
@@ -89,7 +102,6 @@ int main()
         {
             main_window.close();
         }
-        // TODO update window and views as it's resized
 
 
 
@@ -113,20 +125,16 @@ int main()
             view_toggle_helper = false;
         }
         // fuck last seven lines made me feel stupid, very stupid
-        
+        level::tutorial.interaction(default_view, ui::interaction_text);
+
 
         main_window.clear(sf::Color::Black);
-
-
-
             // drawing loop code
                 // setting view to draw the game thingies
         main_window.setView(camera_view);
         level::tutorial.drawmap(main_window);
         // draw actual game contents
         main_window.draw(bot);
-
-
 
         // setting view to default_view for drawing UI
         main_window.setView(default_view);
@@ -138,7 +146,8 @@ int main()
         ////debug text drawing
         main_window.draw(ui::debugger_text);
         if (ui::draw_tooltip) main_window.draw(ui::tooltip_text);
-        
+        main_window.draw(ui::interaction_text);
+
         main_window.display();
     }
 }
