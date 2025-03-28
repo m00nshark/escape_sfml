@@ -121,23 +121,35 @@ namespace level
 
 		void collider()
 		{
-			sf::Vector2f col_curr_pos = bot.getPosition();
+			sf::Vector2f   col_curr_pos = bot.getPosition();
+			UINT col_x = (col_curr_pos.x / cell_size);
+			UINT col_y = (col_curr_pos.y / cell_size);
 			UINT col_rx = (col_curr_pos.x + 12) / cell_size;
 			UINT col_lx = (col_curr_pos.x - 12) / cell_size;
 			UINT col_uy = (col_curr_pos.y - 12) / cell_size;
 			UINT col_dy = (col_curr_pos.y + 12) / cell_size;
-		
-			if ((cellmap[col_rx][(UINT)(col_curr_pos.y / cell_size)] == cell_type::wall || cellmap[col_rx][(UINT)(col_curr_pos.y / cell_size)] == cell_type::door) && bot_stats.dx > 0)
+			if ((cellmap[col_rx][col_y] == cell_type::wall || cellmap[col_rx][col_y] == cell_type::door) && bot_stats.dx > 0)
+			{
 				bot_stats.dx *= -0.8;
-			if ((cellmap[col_lx][(UINT)(col_curr_pos.y / cell_size)] == cell_type::wall || cellmap[col_lx][(UINT)(col_curr_pos.y / cell_size)] == cell_type::door) && bot_stats.dx < 0)
+			}
+			if ((cellmap[col_lx][col_y] == cell_type::wall || cellmap[col_lx][col_y] == cell_type::door) && bot_stats.dx < 0)
+			{
 				bot_stats.dx *= -0.8;
-			if ((cellmap[(UINT)(col_curr_pos.x / cell_size)][col_uy] == cell_type::wall || cellmap[(UINT)(col_curr_pos.x / cell_size)][col_uy] == cell_type::door) && bot_stats.dy < 0)	
+			}
+			if ((cellmap[(UINT)(col_curr_pos.x / cell_size)][col_uy] == cell_type::wall || cellmap[(UINT)(col_curr_pos.x / cell_size)][col_uy] == cell_type::door) && bot_stats.dy < 0)
+			{
 				bot_stats.dy *= -0.8;
+			}
 			if ((cellmap[(UINT)(col_curr_pos.x / cell_size)][col_dy] == cell_type::wall || cellmap[(UINT)(col_curr_pos.x / cell_size)][col_dy] == cell_type::door) && bot_stats.dy > 0)
+			{
 				bot_stats.dy *= -0.8;
+			}
 		}
 
+				// thing that stores state of interaction
 			bool inter_heal, inter_batt, inter_map, inter_key1, inter_lock1, inter_lock2 = false;
+				// thing that is victim of toggling interaction tooltip
+			bool inter_text = false;
 
 		void interaction(sf::View &view, sf::Text &text)
 		{
@@ -145,25 +157,37 @@ namespace level
 
 			if (cellmap[(UINT)(bot.getPosition().x / cell_size)][(UINT)(bot.getPosition().y / cell_size)] == cell_type::interaction)
 			{
-				if (63 < xcoord < 66 && !inter_lock1)
+				if (63 < xcoord && xcoord < 67 && !inter_lock1)
 				{
 
-					if (inter_key1) // for x = 50
+					if (true)
 					{
-						text.setString("press f to open door №1");
+						text.setString(L"press f to open door №1");
 						if (bot_stats.interaction_call)
 						{
 							for (int y = 21; y < 24; y++) cellmap[50][y] = cell_type::floor;
 							inter_lock1 = true;
 						}
 					}
-					else text.setString("no available key for this lock");
-					text.setOrigin({ text.getGlobalBounds().getCenter().x, text.getGlobalBounds().getCenter().y });
+					else text.setString(L"no available key for this lock");
+					if(!inter_text)
+					{
+						text.setOrigin({ text.getGlobalBounds().getCenter().x, text.getGlobalBounds().getCenter().y});
+						text.setOrigin({ text.getGlobalBounds().getCenter().x, text.getGlobalBounds().getCenter().y });
+						inter_text = true;
+					}
 				}
 			}
-			else text.setString("kek");
-
-
+			else
+			{
+				text.setString(L"kek");
+				if(inter_text)
+				{
+					text.setOrigin({ text.getGlobalBounds().getCenter().x, text.getGlobalBounds().getCenter().y });
+					text.setOrigin({ text.getGlobalBounds().getCenter().x, text.getGlobalBounds().getCenter().y });
+					inter_text = false;
+				}
+			}
 		}
 	} tutorial;
 

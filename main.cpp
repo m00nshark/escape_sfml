@@ -95,8 +95,6 @@ int main()
             }
         }
 
-
-
         // exit on pressing ESC key, legacy of 0f0x64's PONG
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))  // seek for pressing an ESC button, close main_window if true
         {
